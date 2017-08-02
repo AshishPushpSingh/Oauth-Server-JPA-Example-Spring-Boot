@@ -20,10 +20,15 @@ public class PlayListRest {
     @Autowired
     PlayListService playListService;
 
-    @GetMapping(value = "/private/getPlaylist/{courseName}", produces = {"application/json"})
+    @GetMapping(value = "/private/getPlaylist/{courseId}", produces = {"application/json"})
     @ResponseBody
-    public CompletionStage<ResponseEntity<String>> getAllCourses(@PathVariable("courseName") String courseName) {
-        return playListService.getAllPLayLists();
+    public CompletionStage<ResponseEntity<String>> getPLayListsByCourse(@PathVariable("courseId") Long id) {
+        return playListService.getPLayListsByCourse(id);
     }
 
+    @GetMapping(value = "/getPlaylist/{courseId}", produces = {"application/json"})
+    @ResponseBody
+    public CompletionStage<ResponseEntity<String>> getAllPLayLists(@PathVariable("courseId") Long id) {
+        return playListService.getPLayListsByCourse(id);
+    }
 }

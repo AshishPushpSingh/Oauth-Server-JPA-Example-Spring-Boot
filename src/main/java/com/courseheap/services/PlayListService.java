@@ -55,4 +55,21 @@ public class PlayListService {
             return new ResponseEntity<>(arrayToJson, HttpStatus.CREATED);
         });
     }
+
+    public CompletableFuture<ResponseEntity<String>> getPLayListsByCourse(Long id) {
+
+        return CompletableFuture.supplyAsync(() -> {
+            String arrayToJson = null;
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+            try {
+                arrayToJson = objectMapper.writeValueAsString(playListRepository.findByCourse_Id(id));
+            } catch (JsonProcessingException e) {
+                Logger.getLogger("CourseService").info("Converting Iterable to Json failed. " + e);
+                e.printStackTrace();
+                return new ResponseEntity<>(arrayToJson, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            return new ResponseEntity<>(arrayToJson, HttpStatus.CREATED);
+        });
+    }
 }

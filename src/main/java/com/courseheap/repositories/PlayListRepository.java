@@ -14,4 +14,5 @@ public interface PlayListRepository extends CrudRepository<PlayList, Long> {
     PlayList findById(Long id);
     List<PlayList> findByLanguage(String language);
     PlayList findByPlayListDetails(String playListDetails);
+    List<PlayList> findByCourse_Id(long teacherId);
 }

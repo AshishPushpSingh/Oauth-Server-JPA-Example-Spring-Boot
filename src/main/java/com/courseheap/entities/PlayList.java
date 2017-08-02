@@ -8,13 +8,11 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.List;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -27,6 +25,9 @@ public class PlayList {
     private String playListName;
     private String language;
     private String playListDetails;
+
+    @OneToOne
+    private Course course;
 
     public PlayList(){}
 
@@ -61,6 +62,14 @@ public class PlayList {
     public void setPlayListDetails(String playListDetails) {
         this.playListDetails = playListDetails;
     }
+
+    /*public Course getCourse() {
+        return course;
+    }
+
+    public void setCourse(Course course) {
+        this.course = course;
+    }*/
 
     @Override
     public int hashCode() {
