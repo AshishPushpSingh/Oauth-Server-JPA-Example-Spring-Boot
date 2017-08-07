@@ -4,6 +4,7 @@ package com.courseheap.controllers;
  * Created by ashish.p on 1/8/17.
  */
 
+import com.courseheap.entities.UserRegistration;
 import com.courseheap.services.RegistrationService;
 import com.oauth.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ public class RegistrationRest {
 
     @PostMapping(value = "/signup")
     @ResponseBody
-    public CompletionStage<ResponseEntity<String>> addUser(@RequestBody User user) {
+    public CompletionStage<ResponseEntity<String>> addUser(@RequestBody UserRegistration user) {
         return registrationService.UserSignUp(user);
     }
 

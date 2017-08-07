@@ -5,6 +5,8 @@ package com.courseheap.services;
  */
 
 import com.courseheap.Utils.EmailService;
+import com.courseheap.entities.UserRegistration;
+import com.courseheap.repositories.UserRegistrationRepository;
 import com.oauth.entities.User;
 import com.oauth.repositories.UserRepository;
 import com.oauth.services.UserService;
@@ -21,22 +23,25 @@ import java.util.concurrent.CompletableFuture;
 @Service
 public class RegistrationService {
 
-
     private EmailService emailService;
 
     private UserRepository userRepository;
 
     private UserService userService;
 
+    private UserRegistrationRepository userRegistrationRepository;
+
     @Autowired
     public RegistrationService(EmailService emailService, UserRepository userRepository,
-                               UserService userService, PasswordEncoder passwordEncoder) {
+                               UserService userService, PasswordEncoder passwordEncoder,
+                               UserRegistrationRepository userRegistrationRepository) {
         this.emailService = emailService;
         this.userRepository = userRepository;
         this.userService = userService;
+        this.userRegistrationRepository = userRegistrationRepository;
     }
 
-    public CompletableFuture<ResponseEntity<String>> UserSignUp(User user) {
+    public CompletableFuture<ResponseEntity<String>> UserSignUp(UserRegistration user) {
 
         return CompletableFuture.supplyAsync(() -> {
             String verifyToken = UUID.randomUUID().toString();
@@ -44,9 +49,8 @@ public class RegistrationService {
             boolean present = userRepository.findByEmail(user.getEmail()).isPresent();
             try {
                 if (!present) {
-                    user.setActive(0);
                     user.setVerifyToken(verifyToken);
-                    User savedUser = userService.saveUser(user);
+                    UserRegistration savedUser = registerUser(user);
                     boolean mailStatus = sendVerificationMail(savedUser);
                     if (mailStatus) {
                         stringResponseEntity = new ResponseEntity<>
@@ -72,15 +76,14 @@ public class RegistrationService {
     public CompletableFuture<ResponseEntity<String>> verifyUser(String token) {
         return CompletableFuture.supplyAsync(() -> {
             ResponseEntity<String> stringResponseEntity;
-            Optional<User> userByVerifyToken = userRepository.findByVerifyToken(token);
-            if (userByVerifyToken.isPresent() && userByVerifyToken.get().getActive() != 1) {
-                User unVerifiedUser = userByVerifyToken.get();
-                unVerifiedUser.setActive(1);
+            Optional<UserRegistration> userByVerifyToken = userRegistrationRepository.findByVerifyToken(token);
+            if (userByVerifyToken.isPresent()) {
+                UserRegistration unVerifiedUser = userByVerifyToken.get();
                 unVerifiedUser.setVerifyToken("true");
+                User user = prepareUserFromRegisteredUser(unVerifiedUser);
                 //userRepository.delete((long)unVerifiedUser.getId());
-                userRepository.save(unVerifiedUser);
+                userRepository.save(user);
                 stringResponseEntity = new ResponseEntity<>("Verification Successfully Done. Congrats!!!", HttpStatus.CREATED);
-
             } else {
                 stringResponseEntity = new ResponseEntity<>("Verification failed please Sign-up again..!", HttpStatus.BAD_REQUEST);
             }
@@ -88,9 +91,20 @@ public class RegistrationService {
         });
     }
 
-
-    private boolean sendVerificationMail(User user) {
+    private boolean sendVerificationMail(UserRegistration user) {
         return emailService.sendMailToUser(user.getEmail(), user.getVerifyToken());
+    }
+
+    private UserRegistration registerUser(UserRegistration userRegistration){
+        userRegistration.setPassword(userService.getPasswordEncoder().encode(userRegistration.getPassword()));
+        userRegistrationRepository.save(userRegistration);
+        return userRegistration;
+    }
+
+    @org.jetbrains.annotations.Contract("_ -> !null")
+    private User prepareUserFromRegisteredUser(UserRegistration userRegistration) {
+       return new User(userRegistration.getName(), userRegistration.getLastName(), userRegistration.getEmail(),
+                1, userRegistration.getPassword());
     }
 
 }
